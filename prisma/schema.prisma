@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String
+  alias String
+  users User[]
+}
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String
+  ruc         String?  @unique
+  admin_id    Int
+  admin       User     @relation("AdminCompanies", fields: [admin_id], references: [id])
+  sector      String   // rubro: tecnología, alimentos, etc.
+  phone       String?
+  address     String?
+  logo_url    String?  // url de logo (opcional)
+  description String?  // breve texto
+
+  // Timestamps
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relaciones
+  sellers     User[]   @relation("CompanySellers")
+  products    Product[]
+}
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  role_id            Int
+  email              String    @unique
+  password           String
+  first_name         String
+  last_name_paternal String
+  last_name_maternal String
+  dni                String    @unique
+  dni_verifier       String
+  birth_date         DateTime
+  gender             Gender
+  status             UserStatus @default(ACTIVE)
+  phone              String?   // opcional
+  address            String?   // opcional
+  profile_image      String?
+
+  // relaciones
+  role           Role     @relation(fields: [role_id], references: [id])
+  company_id     Int?     
+  company        Company? @relation("CompanySellers", fields: [company_id], references: [id])
+  companiesAdmin Company[] @relation("AdminCompanies")
+  products       Product[]
+
+  created_at     DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("users") // mapea al nombre real de la tabla
+}
+
+enum Gender {
+  MASCULINO
+  FEMENINO
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  price       Int
+  stock       Int
+  user_id     Int
+  company_id  Int
+  user        User     @relation(fields: [user_id], references: [id])
+  company     Company  @relation(fields: [company_id], references: [id])
+  created_at  DateTime @default(now())
+}
