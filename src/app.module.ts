@@ -13,13 +13,11 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    // Make ConfigModule global so ConfigService is available throughout the app
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       // Exclude API routes so the static middleware doesn't intercept them.
-      // Use a valid path-to-regexp pattern: '/api(.*)' matches /api and any subpath.
-      exclude: ['/api(.*)'],
+      serveRoot: '/public',
     }),
     UserModule,
     PrismaModule,

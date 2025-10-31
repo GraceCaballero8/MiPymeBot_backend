@@ -1,23 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { JwtPayload } from 'jsonwebtoken';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserFinderService } from '../application/services/user-finder.service';
-import { Request } from 'express';
-import * as jwt from 'jsonwebtoken';
 import { UserUpdateService } from '../application/services/user-update.service';
 import { UserDeleteService } from '../application/services/user-delete.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from '@prisma/client';
 
 @Auth()
 @Controller('users')
@@ -29,50 +17,26 @@ export class UserController {
   ) {}
 
   @Get()
-  async findAll(@Req() req: Request) {
-    const headers = req.get('Authorization');
-    if (!headers) throw new UnauthorizedException('No authorization header');
-    const token = headers.split(' ')[1];
-    if (!token) throw new UnauthorizedException('No authorization header');
-    const { id } = jwt.verify(token, 'secret') as JwtPayload & { id: number };
-
-    return await this.userFinderService.findAll(id);
+  async findAll(@GetUser() user: User) {
+    return await this.userFinderService.findAll(user.id);
   }
 
   @Get('me')
-  async findMe(@Req() req: Request) {
-    const headers = req.get('Authorization');
-    if (!headers) throw new UnauthorizedException('No authorization header');
-    const token = headers.split(' ')[1];
-    if (!token) throw new UnauthorizedException('No authorization header');
-    const { id } = jwt.verify(token, 'secret') as JwtPayload & { id: number };
-
-    return await this.userFinderService.findById(id);
+  async findMe(@GetUser() user: User) {
+    return await this.userFinderService.findById(user.id);
   }
 
   @Patch(':id')
   async updateUser(
     @Param('id') userId: number,
     @Body() body: UpdateUserDto,
-    @Req() req: Request,
+    @GetUser() user: User,
   ) {
-    const headers = req.get('Authorization');
-    if (!headers) throw new UnauthorizedException('No authorization header');
-    const token = headers.split(' ')[1];
-    if (!token) throw new UnauthorizedException('No authorization header');
-    const { id } = jwt.verify(token, 'secret') as JwtPayload & { id: number };
-
-    return await this.userUpdateService.execute(id, body, userId);
+    return await this.userUpdateService.execute(user.id, body, userId);
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id') userId: number, @Req() req: Request) {
-    const headers = req.get('Authorization');
-    if (!headers) throw new UnauthorizedException('No authorization header');
-    const token = headers.split(' ')[1];
-    if (!token) throw new UnauthorizedException('No authorization header');
-    const { id } = jwt.verify(token, 'secret') as JwtPayload & { id: number };
-
-    return await this.userDeleteService.execute(id, userId);
+  async deleteUser(@Param('id') userId: number, @GetUser() user: User) {
+    return await this.userDeleteService.execute(user.id, userId);
   }
 }

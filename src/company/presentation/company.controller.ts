@@ -1,9 +1,7 @@
 import {
   Controller,
-  UseGuards,
   Post,
   Body,
-  Req,
   Get,
   ForbiddenException,
 } from '@nestjs/common';
@@ -13,6 +11,8 @@ import { CompanyCreateService } from '../application/services/company-create.ser
 import { CompanyFinderService } from '../application/services/company-finder.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ValidRoles } from 'src/auth/interfaces/valid-roles.interface';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from '@prisma/client';
 
 @Auth(ValidRoles.ADMIN)
 @Controller('company')
@@ -24,10 +24,8 @@ export class CompanyController {
 
   @Auth(ValidRoles.ADMIN)
   @Post('create')
-  async createCompany(@Body() dto: CompanyCreateDto, @Req() req: any) {
-    const user = req.user;
-
-    if (user.role !== 'admin') {
+  async createCompany(@Body() dto: CompanyCreateDto, @GetUser() user: any) {
+    if (user.role?.name !== 'admin') {
       throw new ForbiddenException(
         'Solo Administradores pueden crear Empresas',
       );
@@ -48,9 +46,8 @@ export class CompanyController {
 
   @Auth(ValidRoles.ADMIN)
   @Get('my')
-  async findMy(@Req() req: any) {
-    const user = req.user;
-    if (user.role !== 'admin') {
+  async findMy(@GetUser() user: any) {
+    if (user.role?.name !== 'admin') {
       throw new ForbiddenException('Solo admins pueden ver sus empresas');
     }
     return this.companyFinderService.findByAdminId(user.id);
