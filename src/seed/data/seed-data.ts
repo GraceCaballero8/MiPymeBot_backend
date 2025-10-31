@@ -1,3 +1,5 @@
+import { ValidRoles } from 'src/auth/interfaces/valid-roles.interface';
+
 interface SeedUsuario {
   email: string;
   password: string;
@@ -25,8 +27,8 @@ interface SeedData {
 
 export const seedData: SeedData = {
   roles: [
-    { id: 1, name: 'admin', alias: 'ADMINISTRADOR' },
-    { id: 2, name: 'vendor', alias: 'VENDEDOR' },
+    { id: 1, name: ValidRoles.ADMIN, alias: 'ADMINISTRADOR' },
+    { id: 2, name: ValidRoles.VENDEDOR, alias: 'VENDEDOR' },
   ],
   users: [
     {

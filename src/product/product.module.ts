@@ -7,9 +7,10 @@ import { ProductController } from './presentation/product.controller';
 import { ProductFinderService } from './application/product-finder.service';
 import { ProductUpdateService } from './application/product-update.service';
 import { ProductDeleteService } from './application/product-delete.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, UserModule],
+  imports: [PrismaModule, UserModule, AuthModule],
   controllers: [ProductController],
   providers: [
     ProductRepository,

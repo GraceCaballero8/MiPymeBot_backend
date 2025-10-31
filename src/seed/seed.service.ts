@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { seedData } from './data/seed-data';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeedService {
@@ -21,13 +22,22 @@ export class SeedService {
   }
 
   private async createUsers() {
-    const users = seedData.users;
+    const usersToCreate = await Promise.all(
+      seedData.users.map(async (user) => {
+        const { password, ...userData } = user;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        return {
+          ...userData,
+          password: hashedPassword,
+        };
+      }),
+    );
 
     await this.prisma.user.createMany({
-      data: users,
+      data: usersToCreate,
     });
-
-    return;
   }
 
   private async deleteDatabase() {
@@ -36,6 +46,5 @@ export class SeedService {
     await this.prisma.user.deleteMany({});
     // 2. Borramos roles
     await this.prisma.role.deleteMany({});
-    return;
   }
 }

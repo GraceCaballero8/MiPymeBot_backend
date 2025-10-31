@@ -17,7 +17,9 @@ import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { UserUpdateService } from '../application/services/user-update.service';
 import { UserDeleteService } from '../application/services/user-delete.service';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
+@Auth()
 @Controller('users')
 export class UserController {
   constructor(

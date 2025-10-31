@@ -1,9 +1,20 @@
-import { Controller, UseGuards, Post, Body, Req, Get, ForbiddenException } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import {
+  Controller,
+  UseGuards,
+  Post,
+  Body,
+  Req,
+  Get,
+  ForbiddenException,
+} from '@nestjs/common';
+
 import { CompanyCreateDto } from './dto/company-create.dto';
 import { CompanyCreateService } from '../application/services/company-create.service';
 import { CompanyFinderService } from '../application/services/company-finder.service';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ValidRoles } from 'src/auth/interfaces/valid-roles.interface';
 
+@Auth(ValidRoles.ADMIN)
 @Controller('company')
 export class CompanyController {
   constructor(
@@ -11,13 +22,15 @@ export class CompanyController {
     private readonly companyFinderService: CompanyFinderService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Post('create')
   async createCompany(@Body() dto: CompanyCreateDto, @Req() req: any) {
     const user = req.user;
 
     if (user.role !== 'admin') {
-      throw new ForbiddenException('Solo Administradores pueden crear Empresas');
+      throw new ForbiddenException(
+        'Solo Administradores pueden crear Empresas',
+      );
     }
 
     const created = await this.companyCreateService.execute(dto, user.id);
@@ -27,12 +40,13 @@ export class CompanyController {
     };
   }
 
+  @Auth(ValidRoles.ADMIN)
   @Get()
   async findAll() {
     return this.companyFinderService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Get('my')
   async findMy(@Req() req: any) {
     const user = req.user;
@@ -41,6 +55,4 @@ export class CompanyController {
     }
     return this.companyFinderService.findByAdminId(user.id);
   }
-
-  
 }

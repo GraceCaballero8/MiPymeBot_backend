@@ -6,8 +6,10 @@ import { UserUpdateService } from './application/services/user-update.service';
 import { UserDeleteService } from './application/services/user-delete.service';
 import { UserRepository } from './infrastructure/user.repository';
 import { UserController } from './presentation/user.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
+  imports: [AuthModule],
   controllers: [UserController],
   providers: [
     PrismaService,

@@ -23,7 +23,9 @@ import { ProductFinderService } from '../application/product-finder.service';
 import { ProductUpdateDto } from './dtos/product-update.dto';
 import { ProductUpdateService } from '../application/product-update.service';
 import { ProductDeleteService } from '../application/product-delete.service';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
+@Auth()
 @Controller('products')
 export class ProductController {
   constructor(
