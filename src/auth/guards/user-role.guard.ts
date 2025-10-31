@@ -39,6 +39,6 @@ export class UserRoleGuard implements CanActivate {
 
     throw new ForbiddenException(
       `User ${user.first_name + ' ' + (user.last_name_paternal ?? '')} need a valid role: [${validRoles}]`,
-    ); // Si no, se lanza una excepción de acceso denegado
+    );
   }
 }

@@ -9,4 +9,9 @@ export interface IUserCreate {
   birth_date: Date;
   gender: 'MASCULINO' | 'FEMENINO';
   role_id: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  company_id?: number;
+  phone?: string;
+  address?: string;
+  profile_image?: string;
 }

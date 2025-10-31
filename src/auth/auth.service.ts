@@ -102,6 +102,7 @@ export class AuthService {
 
         const hashed = await bcrypt.hash(createUserDto.password, 10);
 
+        // Crear usuario admin
         const createdUser = await tx.user.create({
           data: {
             email: emailLower,
@@ -118,7 +119,25 @@ export class AuthService {
           include: { role: true },
         });
 
-        return createdUser;
+        // Crear compañía básica para el admin
+        const defaultCompanyName = `Empresa de ${createdUser.first_name} ${createdUser.last_name_paternal}`;
+        const company = await tx.company.create({
+          data: {
+            name: defaultCompanyName,
+            admin_id: createdUser.id,
+            sector: 'General', // Sector por defecto
+            description: 'Completa la información de tu empresa en "Mi Tienda"',
+          },
+        });
+
+        // Actualizar el usuario con la compañía creada
+        const updatedUser = await tx.user.update({
+          where: { id: createdUser.id },
+          data: { company_id: company.id },
+          include: { role: true },
+        });
+
+        return updatedUser;
       });
 
       const token = this.getJwtToken({ id: created.id });

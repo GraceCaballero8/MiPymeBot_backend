@@ -42,6 +42,11 @@ export class SeedService {
 
   private async deleteDatabase() {
     // Borramos en orden inverso para evitar conflictos de Foreign Key
+
+    await this.prisma.product.deleteMany({});
+
+    await this.prisma.company.deleteMany({});
+
     // 1. Borramos usuarios (que dependen de roles)
     await this.prisma.user.deleteMany({});
     // 2. Borramos roles

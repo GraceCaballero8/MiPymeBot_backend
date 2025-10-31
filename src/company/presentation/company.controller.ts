@@ -1,55 +1,57 @@
 import {
   Controller,
-  Post,
   Body,
   Get,
-  ForbiddenException,
+  Patch,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 
-import { CompanyCreateDto } from './dto/company-create.dto';
-import { CompanyCreateService } from '../application/services/company-create.service';
+import { CompanyUpdateDto } from './dto/company-update.dto';
+import { CompanyUpdateService } from '../application/services/company-update.service';
 import { CompanyFinderService } from '../application/services/company-finder.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ValidRoles } from 'src/auth/interfaces/valid-roles.interface';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { User } from '@prisma/client';
 
 @Auth(ValidRoles.ADMIN)
 @Controller('company')
 export class CompanyController {
   constructor(
-    private readonly companyCreateService: CompanyCreateService,
+    private readonly companyUpdateService: CompanyUpdateService,
     private readonly companyFinderService: CompanyFinderService,
   ) {}
 
-  @Auth(ValidRoles.ADMIN)
-  @Post('create')
-  async createCompany(@Body() dto: CompanyCreateDto, @GetUser() user: any) {
-    if (user.role?.name !== 'admin') {
-      throw new ForbiddenException(
-        'Solo Administradores pueden crear Empresas',
-      );
-    }
+  // La empresa se crea automáticamente al registrarse como admin
+  // Ya no es necesario el endpoint POST para crear empresa manualmente
 
-    const created = await this.companyCreateService.execute(dto, user.id);
-    return {
-      message: 'Company created successfully',
-      data: created,
-    };
+  // Actualizar empresa (PATCH /api/company/:id)
+  @Patch(':id')
+  async updateCompany(
+    @Param('id', ParseIntPipe) companyId: number,
+    @Body() dto: CompanyUpdateDto,
+    @GetUser() user: any,
+  ) {
+    return await this.companyUpdateService.execute(companyId, dto, user.id);
   }
 
-  @Auth(ValidRoles.ADMIN)
+  // Obtener todas las empresas (GET /api/company)
   @Get()
   async findAll() {
     return this.companyFinderService.findAll();
   }
 
-  @Auth(ValidRoles.ADMIN)
+  // Obtener mi empresa (GET /api/company/my)
   @Get('my')
   async findMy(@GetUser() user: any) {
-    if (user.role?.name !== 'admin') {
-      throw new ForbiddenException('Solo admins pueden ver sus empresas');
+    const companies = await this.companyFinderService.findByAdminId(user.id);
+
+    // Si tiene empresa, devolver la primera (solo puede tener una)
+    if (companies && companies.length > 0) {
+      return companies[0];
     }
-    return this.companyFinderService.findByAdminId(user.id);
+
+    // Si no tiene empresa, devolver null
+    return null;
   }
 }

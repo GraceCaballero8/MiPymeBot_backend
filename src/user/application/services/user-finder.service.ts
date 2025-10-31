@@ -31,6 +31,11 @@ export class UserFinderService {
     return await this.userRepository.findByDni(dni);
   }
 
+  // Buscar vendedores por company_id
+  async findSellersByCompanyId(companyId: number) {
+    return await this.userRepository.findSellersByCompanyId(companyId);
+  }
+
   async validateRole(userId: number) {
     const user = await this.userRepository.findById(userId);
 

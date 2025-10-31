@@ -60,13 +60,41 @@ export class UserRepository {
     });
   }
 
+  // Buscar vendedores por company_id
+  async findSellersByCompanyId(companyId: number) {
+    return this.PrismaService.user.findMany({
+      where: {
+        company_id: companyId,
+        role: {
+          name: {
+            in: ['vendor', 'seller'], // Roles de vendedores
+          },
+        },
+      },
+      include: {
+        role: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            ruc: true,
+          },
+        },
+      },
+      omit: {
+        password: true,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
   async create(user: IUserCreate) {
     return this.PrismaService.user.create({
       data: user,
     });
   }
-
-  
 
   async update(id: number, user: IUserUpdate) {
     return this.PrismaService.user.update({

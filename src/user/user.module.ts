@@ -4,6 +4,7 @@ import { UserFinderService } from './application/services/user-finder.service';
 import { UserCreateService } from './application/services/user-create.service';
 import { UserUpdateService } from './application/services/user-update.service';
 import { UserDeleteService } from './application/services/user-delete.service';
+import { SellerCreateService } from './application/services/seller-create.service';
 import { UserRepository } from './infrastructure/user.repository';
 import { UserController } from './presentation/user.controller';
 import { AuthModule } from 'src/auth/auth.module';
@@ -17,6 +18,7 @@ import { AuthModule } from 'src/auth/auth.module';
     UserCreateService,
     UserUpdateService,
     UserDeleteService,
+    SellerCreateService,
     UserRepository,
   ],
   exports: [UserFinderService, UserCreateService, UserRepository],

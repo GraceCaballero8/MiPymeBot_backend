@@ -30,9 +30,23 @@ export class ProfileService {
   }
 
   async updateProfile(userId: number, dto: ProfileUpdateDto) {
+    // Convertir birth_date string a Date si existe
+    const updateData: any = { ...dto };
+
+    if (dto.birth_date) {
+      updateData.birth_date = new Date(dto.birth_date);
+    }
+
+    // Remover campos undefined o vacíos para no sobrescribir con null
+    Object.keys(updateData).forEach((key) => {
+      if (updateData[key] === undefined || updateData[key] === '') {
+        delete updateData[key];
+      }
+    });
+
     return this.prisma.user.update({
       where: { id: userId },
-      data: dto,
+      data: updateData,
       select: {
         id: true,
         email: true,
@@ -41,7 +55,7 @@ export class ProfileService {
         last_name_maternal: true,
         phone: true,
         address: true,
-        profile_image: true, 
+        profile_image: true,
         birth_date: true,
         gender: true,
       },
