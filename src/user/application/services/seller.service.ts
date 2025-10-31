@@ -8,10 +8,10 @@ import { CreateSellerDto } from '../../presentation/dto/create-seller.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class SellerCreateService {
+export class SellerService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(adminId: number, createSellerDto: CreateSellerDto) {
+  async createSeller(adminId: number, createSellerDto: CreateSellerDto) {
     // Verificar que el admin existe y tiene una empresa
     const admin = await this.prisma.user.findUnique({
       where: { id: adminId },

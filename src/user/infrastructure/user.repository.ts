@@ -66,9 +66,7 @@ export class UserRepository {
       where: {
         company_id: companyId,
         role: {
-          name: {
-            in: ['vendor', 'seller'], // Roles de vendedores
-          },
+          name: 'vendedor', // Rol correcto según ValidRoles
         },
       },
       include: {
