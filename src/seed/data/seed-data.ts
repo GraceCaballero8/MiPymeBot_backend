@@ -34,7 +34,7 @@ export const seedData: SeedData = {
   users: [
     // Admin principal - se le creará una compañía automáticamente
     {
-      email: 'admin@gmail.com',
+      email: 'admin@pymebot.com',
       password: 'admin',
       first_name: 'Admin',
       last_name_paternal: 'Root',

@@ -21,51 +21,61 @@ model Role {
 }
 
 model Company {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   name        String
   ruc         String?  @unique
   admin_id    Int
   admin       User     @relation("AdminCompanies", fields: [admin_id], references: [id])
-  sector      String   // rubro: tecnología, alimentos, etc.
+  sector      String
   phone       String?
   address     String?
-  logo_url    String?  // url de logo (opcional)
-  description String?  // breve texto
+  logo_url    String?
+  description String?
 
   // Timestamps
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // Relaciones
-  sellers     User[]   @relation("CompanySellers")
-  products    Product[]
+  sellers  User[]    @relation("CompanySellers")
+  products Product[]
+
+  // --- AÑADE ESTAS LÍNEAS ---
+  product_groups    ProductGroup[]
+  units_of_measure  UnitOfMeasure[]
+  inventory_movements InventoryMovement[]
+  // --- FIN DE LÍNEAS NUEVAS ---
 }
 
 model User {
-  id                 Int       @id @default(autoincrement())
+  id                 Int        @id @default(autoincrement())
   role_id            Int
-  email              String    @unique
+  email              String     @unique
   password           String
   first_name         String
   last_name_paternal String
   last_name_maternal String
-  dni                String    @unique
+  dni                String     @unique
   dni_verifier       String
   birth_date         DateTime
   gender             Gender
   status             UserStatus @default(ACTIVE)
-  phone              String?   // opcional
-  address            String?   // opcional
+  phone              String?
+  address            String?
   profile_image      String?
 
   // relaciones
-  role           Role     @relation(fields: [role_id], references: [id])
-  company_id     Int?     
-  company        Company? @relation("CompanySellers", fields: [company_id], references: [id])
+  role           Role      @relation(fields: [role_id], references: [id])
+  company_id     Int?
+  company        Company?  @relation("CompanySellers", fields: [company_id], references: [id])
   companiesAdmin Company[] @relation("AdminCompanies")
   products       Product[]
 
-  created_at     DateTime @default(now())
+  // --- AÑADE ESTA LÍNEA ---
+  inventory_movements InventoryMovement[]
+  // --- FIN DE LÍNEA NUEVA ---
+
+  created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
   @@map("users") // mapea al nombre real de la tabla
@@ -81,16 +91,89 @@ enum UserStatus {
   INACTIVE
 }
 
+// --- INICIO: MODULO DE INVENTARIO ---
 
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  slug        String   @unique
-  price       Int
-  stock       Int
-  user_id     Int
-  company_id  Int
-  user        User     @relation(fields: [user_id], references: [id])
-  company     Company  @relation(fields: [company_id], references: [id])
-  created_at  DateTime @default(now())
+// Enum para tipo de movimiento
+enum MovementType {
+  INGRESO // Entrada de stock
+  EGRESO  // Salida de stock (ej. Venta)
 }
+
+// Modelo para "Grupos" (Ej: Producto Terminado, Materia Prima)
+model ProductGroup {
+  id         Int       @id @default(autoincrement())
+  name       String
+  company_id Int
+  company    Company   @relation(fields: [company_id], references: [id])
+  products   Product[]
+
+  @@unique([name, company_id]) // Un grupo no se puede llamar igual en la misma compañía
+  @@map("product_groups")
+}
+
+// Modelo para "Unidad de Medida" (Ej: Unidades, Kilos, Litros)
+model UnitOfMeasure {
+  id           Int       @id @default(autoincrement())
+  name         String // Ej: "Unidades"
+  abbreviation String // Ej: "UND"
+  company_id   Int
+  company      Company   @relation(fields: [company_id], references: [id])
+  products     Product[]
+
+  @@unique([name, company_id])
+  @@map("units_of_measure")
+}
+
+// Modelo de Producto (Tu catálogo maestro)
+model Product {
+  id          Int     @id @default(autoincrement())
+  sku         String // El "Código" en tu UI, ej: "PT0002"
+  name        String // Ej: "POLO BASICO TALLA M"
+  slug        String  @unique // Para URLs amigables
+  price       Decimal? // Precio de venta (opcional, pero recomendado)
+  min_stock   Int     @default(0) // Stock Mínimo
+  
+  // Relaciones de Catálogo
+  unit_id     Int
+  unit        UnitOfMeasure @relation(fields: [unit_id], references: [id])
+  group_id    Int
+  group       ProductGroup  @relation(fields: [group_id], references: [id])
+
+  // Relaciones de Pertenencia
+  user_id     Int // Usuario que registró el producto
+  user        User    @relation(fields: [user_id], references: [id])
+  company_id  Int // Compañía a la que pertenece el producto
+  company     Company @relation(fields: [company_id], references: [id])
+  
+  // Relación con el Kardex
+  movements InventoryMovement[]
+
+  // Timestamps
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([sku, company_id]) // El SKU (código) debe ser único por compañía
+  @@map("products")
+}
+
+// Modelo de Movimientos (El Kardex)
+model InventoryMovement {
+  id            Int          @id @default(autoincrement())
+  quantity      Int // Cantidad que se mueve (SIEMPRE positivo)
+  type          MovementType // El tipo (INGRESO, EGRESO) dice si suma o resta
+  movement_date DateTime     @default(now()) // Fecha del movimiento
+  observations  String?
+  
+  // Relaciones
+  product_id    Int
+  product       Product @relation(fields: [product_id], references: [id])
+  user_id       Int // Usuario que registró el movimiento
+  user          User    @relation(fields: [user_id], references: [id])
+  company_id    Int     // Para reportes rápidos por compañía
+  company       Company @relation(fields: [company_id], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@map("inventory_movements")
+}
+

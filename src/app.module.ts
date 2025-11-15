@@ -4,12 +4,14 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SeedModule } from './seed/seed.module';
 import { RoleModule } from './role/role.module';
-import { ProductModule } from './product/product.module';
+
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CompanyModule } from './company/company.module';
 import { ProfileModule } from './profile/profile.module';
 import { AuthModule } from './auth/auth.module';
+import { CatalogoModule } from './catalogo/catalogo.module';
+import { InventarioModule } from './inventario/inventario.module';
 
 @Module({
   imports: [
@@ -24,9 +26,10 @@ import { AuthModule } from './auth/auth.module';
     SeedModule,
     RoleModule,
     AuthModule,
-    ProductModule,
     CompanyModule,
     ProfileModule,
+    CatalogoModule,
+    InventarioModule,
   ],
 })
 export class AppModule {}
