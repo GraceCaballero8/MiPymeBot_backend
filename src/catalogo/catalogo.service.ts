@@ -6,6 +6,7 @@ import {
 import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class CatalogoService {
@@ -17,6 +18,10 @@ export class CatalogoService {
    */
   async create(createProductDto: CreateProductDto, user: User) {
     const { sku, name, unit_id, group_id, min_stock, price } = createProductDto;
+
+    if (!user.company_id) {
+      throw new BadRequestException('Usuario sin compañía asignada');
+    }
 
     // Validar que el SKU no exista ya en la compañía
     const existingProduct = await this.prisma.product.findUnique({
@@ -82,6 +87,40 @@ export class CatalogoService {
   }
 
   /**
+   * Obtiene todos los productos de una compañía.
+   */
+  async findAll(company_id: number) {
+    return this.prisma.product.findMany({
+      where: { company_id },
+      include: {
+        unit: true,
+        group: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+  }
+
+  /**
+   * Obtiene todos los grupos de productos de una compañía.
+   */
+  async getGroups(company_id: number) {
+    return this.prisma.productGroup.findMany({
+      where: { company_id },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  /**
+   * Obtiene todas las unidades de medida de una compañía.
+   */
+  async getUnits(company_id: number) {
+    return this.prisma.unitOfMeasure.findMany({
+      where: { company_id },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  /**
    * Busca productos por SKU o nombre dentro de la compañía del usuario.
    * Usado para el autocompletado en "Registro de Movimientos".
    */
@@ -112,6 +151,80 @@ export class CatalogoService {
     });
 
     return products;
+  }
+
+  /**
+   * Actualiza un producto existente.
+   */
+  async update(
+    productId: number,
+    updateProductDto: UpdateProductDto,
+    user: User,
+  ) {
+    if (!user.company_id) {
+      throw new BadRequestException('Usuario sin compañía asignada');
+    }
+
+    // Verificar que el producto existe y pertenece a la compañía
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id: productId,
+        company_id: user.company_id,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado');
+    }
+
+    const { unit_id, group_id, name, ...rest } = updateProductDto;
+
+    // Si se actualiza la unidad, validar que exista
+    if (unit_id) {
+      const unit = await this.prisma.unitOfMeasure.findFirst({
+        where: {
+          id: unit_id,
+          company_id: user.company_id,
+        },
+      });
+
+      if (!unit) {
+        throw new NotFoundException(
+          `La unidad de medida con ID ${unit_id} no existe`,
+        );
+      }
+    }
+
+    // Si se actualiza el grupo, validar que exista
+    if (group_id) {
+      const group = await this.prisma.productGroup.findFirst({
+        where: {
+          id: group_id,
+          company_id: user.company_id,
+        },
+      });
+
+      if (!group) {
+        throw new NotFoundException(`El grupo con ID ${group_id} no existe`);
+      }
+    }
+
+    // Si se actualiza el nombre, regenerar el slug
+    const updateData: any = { ...rest, unit_id, group_id };
+    if (name) {
+      updateData.name = name;
+      updateData.slug = this.generateSlug(name, product.sku);
+    }
+
+    // Actualizar el producto
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: updateData,
+      include: {
+        unit: true,
+        group: true,
+      },
+    });
   }
 
   /**

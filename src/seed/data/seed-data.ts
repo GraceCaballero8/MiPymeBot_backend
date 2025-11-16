@@ -21,15 +21,39 @@ interface SeedRole {
   alias: string;
 }
 
+interface SeedProductGroup {
+  name: string;
+}
+
+interface SeedUnitOfMeasure {
+  name: string;
+  abbreviation: string;
+}
+
 interface SeedData {
   roles: SeedRole[];
   users: SeedUsuario[];
+  productGroups: SeedProductGroup[];
+  unitsOfMeasure: SeedUnitOfMeasure[];
 }
 
 export const seedData: SeedData = {
   roles: [
     { id: 1, name: ValidRoles.ADMIN, alias: 'ADMINISTRADOR' },
     { id: 2, name: ValidRoles.VENDEDOR, alias: 'VENDEDOR' },
+  ],
+  productGroups: [
+    { name: 'Producto Terminado' },
+    { name: 'Materia Prima' },
+    { name: 'Insumos' },
+  ],
+  unitsOfMeasure: [
+    { name: 'Unidades', abbreviation: 'UND' },
+    { name: 'Kilogramos', abbreviation: 'KG' },
+    { name: 'Litros', abbreviation: 'LT' },
+    { name: 'Metros', abbreviation: 'M' },
+    { name: 'Cajas', abbreviation: 'CJA' },
+    { name: 'Docenas', abbreviation: 'DOC' },
   ],
   users: [
     // Admin principal - se le creará una compañía automáticamente

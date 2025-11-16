@@ -38,6 +38,9 @@ export class InventarioController {
   @Get('status')
   @Auth()
   getInventoryStatus(@GetUser() user: User) {
+    if (!user.company_id) {
+      throw new Error('Usuario sin compañía asignada');
+    }
     return this.inventarioService.getInventoryStatus(user.company_id);
   }
 
@@ -50,6 +53,9 @@ export class InventarioController {
   @Get('kardex')
   @Auth()
   getProductKardex(@GetUser() user: User, @Query('sku') sku: string) {
+    if (!user.company_id) {
+      throw new Error('Usuario sin compañía asignada');
+    }
     return this.inventarioService.getProductKardex(sku, user.company_id);
   }
 }

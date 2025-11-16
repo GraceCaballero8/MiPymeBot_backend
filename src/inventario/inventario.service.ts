@@ -15,6 +15,10 @@ export class InventarioService {
     const { product_code, type, quantity, movement_date, observations } =
       createMovementDto;
 
+    if (!user.company_id) {
+      throw new NotFoundException('Usuario sin compañía asignada');
+    }
+
     // Buscar el producto por SKU dentro de la compañía del usuario
     const product = await this.prisma.product.findUnique({
       where: {

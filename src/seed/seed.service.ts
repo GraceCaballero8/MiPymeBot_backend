@@ -12,7 +12,6 @@ export class SeedService {
     await this.createRoles();
     await this.createUsersWithCompanies();
     await this.createProductGroupsAndUnits();
-    await this.createSampleProducts();
     return 'Seed executed successfully';
   }
 
@@ -134,114 +133,26 @@ export class SeedService {
     const companies = await this.prisma.company.findMany();
 
     for (const company of companies) {
-      // Crear grupos de productos
+      // Crear grupos de productos desde seedData
+      const groupsData = seedData.productGroups.map((group) => ({
+        name: group.name,
+        company_id: company.id,
+      }));
+
       await this.prisma.productGroup.createMany({
-        data: [
-          { name: 'Producto Terminado', company_id: company.id },
-          { name: 'Materia Prima', company_id: company.id },
-        ],
+        data: groupsData,
       });
 
-      // Crear unidades de medida
+      // Crear unidades de medida desde seedData
+      const unitsData = seedData.unitsOfMeasure.map((unit) => ({
+        name: unit.name,
+        abbreviation: unit.abbreviation,
+        company_id: company.id,
+      }));
+
       await this.prisma.unitOfMeasure.createMany({
-        data: [
-          { name: 'Unidades', abbreviation: 'UND', company_id: company.id },
-          { name: 'Kilogramos', abbreviation: 'KG', company_id: company.id },
-          { name: 'Litros', abbreviation: 'LT', company_id: company.id },
-          { name: 'Metros', abbreviation: 'M', company_id: company.id },
-        ],
+        data: unitsData,
       });
-    }
-  }
-
-  /**
-   * Crea productos de ejemplo para cada compañía.
-   */
-  private async createSampleProducts() {
-    const companies = await this.prisma.company.findMany({
-      include: {
-        admin: true,
-      },
-    });
-
-    for (const company of companies) {
-      // Obtener los grupos y unidades creados para esta compañía
-      const productoTerminado = await this.prisma.productGroup.findFirst({
-        where: { name: 'Producto Terminado', company_id: company.id },
-      });
-
-      const materiaPrima = await this.prisma.productGroup.findFirst({
-        where: { name: 'Materia Prima', company_id: company.id },
-      });
-
-      const unidades = await this.prisma.unitOfMeasure.findFirst({
-        where: { abbreviation: 'UND', company_id: company.id },
-      });
-
-      if (!productoTerminado || !materiaPrima || !unidades) {
-        console.warn(
-          `No se pudieron crear productos para la compañía ${company.name}`,
-        );
-        continue;
-      }
-
-      // Crear productos de ejemplo
-      await this.prisma.product.createMany({
-        data: [
-          {
-            sku: 'PT0001',
-            name: 'POLO CUELLO CAMISA',
-            slug: 'polo-cuello-camisa-pt0001',
-            price: 35.0,
-            min_stock: 10,
-            unit_id: unidades.id,
-            group_id: productoTerminado.id,
-            user_id: company.admin_id,
-            company_id: company.id,
-          },
-          {
-            sku: 'PT0002',
-            name: 'POLO BASICO TALLA M',
-            slug: 'polo-basico-talla-m-pt0002',
-            price: 25.5,
-            min_stock: 50,
-            unit_id: unidades.id,
-            group_id: productoTerminado.id,
-            user_id: company.admin_id,
-            company_id: company.id,
-          },
-          {
-            sku: 'MP0002',
-            name: 'HILO COLOR BLANCO',
-            slug: 'hilo-color-blanco-mp0002',
-            price: 15.0,
-            min_stock: 10,
-            unit_id: unidades.id,
-            group_id: materiaPrima.id,
-            user_id: company.admin_id,
-            company_id: company.id,
-          },
-        ],
-      });
-
-      // Crear un movimiento de ingreso inicial para el producto PT0001
-      const pt0001 = await this.prisma.product.findFirst({
-        where: { sku: 'PT0001', company_id: company.id },
-      });
-
-      if (pt0001) {
-        await this.prisma.inventoryMovement.create({
-          data: {
-            product_id: pt0001.id,
-            type: 'INGRESO',
-            quantity: 10,
-            movement_date: new Date('2025-01-15'),
-            observations: 'Stock inicial',
-            user_id: company.admin_id,
-            company_id: company.id,
-          },
-        });
-      }
     }
   }
 }
