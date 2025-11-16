@@ -32,10 +32,6 @@ export class CreateSellerDto {
   @Matches(/^\d{8}$/, { message: 'DNI must be 8 digits' })
   dni: string;
 
-  @IsString()
-  @Matches(/^[0-9K]$/, { message: 'DNI verifier must be a digit or K' })
-  dni_verifier: string;
-
   @IsDateString()
   birth_date: string;
 

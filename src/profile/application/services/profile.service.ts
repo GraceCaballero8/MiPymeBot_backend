@@ -16,7 +16,6 @@ export class ProfileService {
         last_name_paternal: true,
         last_name_maternal: true,
         dni: true,
-        dni_verifier: true,
         birth_date: true,
         gender: true,
         phone: true,

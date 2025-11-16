@@ -58,7 +58,6 @@ export class SellerService {
         last_name_paternal: createSellerDto.last_name_paternal,
         last_name_maternal: createSellerDto.last_name_maternal,
         dni: createSellerDto.dni,
-        dni_verifier: createSellerDto.dni_verifier,
         birth_date: new Date(createSellerDto.birth_date),
         gender: createSellerDto.gender,
         phone: createSellerDto.phone,

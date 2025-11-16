@@ -69,12 +69,6 @@ export class AuthService {
       );
     }
 
-    if ((createUserDto.dni_verifier ?? '').length !== 1) {
-      throw new BadRequestException(
-        'El dígito verificador del DNI debe ser un solo carácter',
-      );
-    }
-
     const emailLower = createUserDto.email.toLowerCase().trim();
 
     try {
@@ -109,7 +103,6 @@ export class AuthService {
             last_name_paternal: createUserDto.last_name_paternal,
             last_name_maternal: createUserDto.last_name_maternal || '',
             dni: createUserDto.dni,
-            dni_verifier: createUserDto.dni_verifier,
             birth_date: birth,
             gender: createUserDto.gender,
             role_id: roleId,

@@ -7,7 +7,6 @@ interface SeedUsuario {
   last_name_paternal: string;
   last_name_maternal: string;
   dni: string;
-  dni_verifier: string;
   birth_date: Date;
   role_id: number;
   gender: 'MASCULINO' | 'FEMENINO';
@@ -64,7 +63,6 @@ export const seedData: SeedData = {
       last_name_paternal: 'Root',
       last_name_maternal: 'System',
       dni: '12345678',
-      dni_verifier: '0',
       birth_date: new Date('1990-01-01'),
       role_id: 1, // ADMIN - se creará compañía automáticamente
       gender: 'MASCULINO',
@@ -78,7 +76,6 @@ export const seedData: SeedData = {
       last_name_paternal: 'Pérez',
       last_name_maternal: 'López',
       dni: '23456789',
-      dni_verifier: '1',
       birth_date: new Date('1995-03-20'),
       role_id: 2, // VENDEDOR
       gender: 'MASCULINO',
@@ -93,7 +90,6 @@ export const seedData: SeedData = {
     //   last_name_paternal: 'González',
     //   last_name_maternal: 'Pérez',
     //   dni: '87654321',
-    //   dni_verifier: '5',
     //   birth_date: new Date('1992-05-15'),
     //   role_id: 1, // ADMIN - se creará compañía automáticamente
     //   gender: 'FEMENINO',
@@ -106,7 +102,6 @@ export const seedData: SeedData = {
     //   last_name_paternal: 'Martínez',
     //   last_name_maternal: 'Ruiz',
     //   dni: '34567890',
-    //   dni_verifier: '2',
     //   birth_date: new Date('1998-07-10'),
     //   role_id: 2, // VENDEDOR
     //   gender: 'FEMENINO',

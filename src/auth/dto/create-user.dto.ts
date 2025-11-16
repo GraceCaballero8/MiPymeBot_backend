@@ -38,10 +38,6 @@ export class CreateUserDto {
   @IsString()
   dni: string;
 
-  @IsString()
-  @Matches(/^[A-Za-z0-9]$/)
-  dni_verifier: string;
-
   @IsDateString()
   birth_date: string;
 

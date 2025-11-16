@@ -52,7 +52,6 @@ model User {
   last_name_paternal String
   last_name_maternal String
   dni                String     @unique
-  dni_verifier       String
   birth_date         DateTime
   gender             Gender
   status             UserStatus @default(ACTIVE)
