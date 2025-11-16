@@ -40,12 +40,9 @@ export class AuthService {
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new UnauthorizedException('Invalid credentials');
 
+    // Permitir acceso a admin y vendedor
     const roleName = user.role?.name ?? '';
-    if (
-      roleName !== 'admin' &&
-      roleName !== 'vendor' &&
-      roleName !== 'seller'
-    ) {
+    if (roleName !== 'admin' && roleName !== 'vendedor') {
       throw new UnauthorizedException('Access restricted');
     }
 
@@ -63,7 +60,7 @@ export class AuthService {
     const validAge = age > 18 || (age === 18 && m >= 0);
     if (!validAge) {
       throw new BadRequestException(
-        'El administrador debe tener al menos 18 años',
+        'Debes tener al menos 18 años para registrarte',
       );
     }
     if (birth.getFullYear() > 2025) {
@@ -94,10 +91,11 @@ export class AuthService {
         if (existingDni)
           throw new BadRequestException('El DNI ya está registrado');
 
-        const roleId = createUserDto.role_id ?? 1;
+        // Por defecto registrar como vendedor (role_id = 2)
+        const roleId = createUserDto.role_id ?? 2;
         const role = await tx.role.findUnique({ where: { id: roleId } });
-        if (!role || role.name.toUpperCase() !== 'ADMIN') {
-          throw new BadRequestException('Rol ADMIN no encontrado');
+        if (!role) {
+          throw new BadRequestException('Rol no encontrado');
         }
 
         const hashed = await bcrypt.hash(createUserDto.password, 10);
@@ -119,25 +117,31 @@ export class AuthService {
           include: { role: true },
         });
 
-        // Crear compañía básica para el admin
-        const defaultCompanyName = `Empresa de ${createdUser.first_name} ${createdUser.last_name_paternal}`;
-        const company = await tx.company.create({
-          data: {
-            name: defaultCompanyName,
-            admin_id: createdUser.id,
-            sector: 'General', // Sector por defecto
-            description: 'Completa la información de tu empresa en "Mi Tienda"',
-          },
-        });
+        // Solo crear compañía si es admin
+        if (role.name === 'admin') {
+          const defaultCompanyName = `Empresa de ${createdUser.first_name} ${createdUser.last_name_paternal}`;
+          const company = await tx.company.create({
+            data: {
+              name: defaultCompanyName,
+              admin_id: createdUser.id,
+              sector: 'General',
+              description:
+                'Completa la información de tu empresa en "Mi Tienda"',
+            },
+          });
 
-        // Actualizar el usuario con la compañía creada
-        const updatedUser = await tx.user.update({
-          where: { id: createdUser.id },
-          data: { company_id: company.id },
-          include: { role: true },
-        });
+          // Actualizar el usuario con la compañía creada
+          const updatedUser = await tx.user.update({
+            where: { id: createdUser.id },
+            data: { company_id: company.id },
+            include: { role: true },
+          });
 
-        return updatedUser;
+          return updatedUser;
+        }
+
+        // Si es vendedor, retornar sin compañía
+        return createdUser;
       });
 
       const token = this.getJwtToken({ id: created.id });

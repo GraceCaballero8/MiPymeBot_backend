@@ -48,6 +48,9 @@ export class UserRepository {
   async findById(id: number) {
     return this.PrismaService.user.findUnique({
       where: { id },
+      omit: {
+        password: true,
+      },
       include: {
         role: true,
       },
