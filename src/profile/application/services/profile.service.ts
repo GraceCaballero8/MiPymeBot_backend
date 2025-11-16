@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfileUpdateDto } from 'src/profile/dto/profile-update.dto';
 
@@ -7,7 +7,7 @@ export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getProfile(userId: number) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -26,9 +26,24 @@ export class ProfileService {
         company: { select: { name: true, ruc: true, sector: true } },
       },
     });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    return user;
   }
 
   async updateProfile(userId: number, dto: ProfileUpdateDto) {
+    // Verificar que el usuario existe
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
     // Convertir birth_date string a Date si existe
     const updateData: any = { ...dto };
 

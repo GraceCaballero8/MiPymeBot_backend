@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import { InventarioService } from './inventario.service';
 import { CreateMovementDto } from './dto/create-movement.dto';
@@ -39,7 +46,7 @@ export class InventarioController {
   @Auth()
   getInventoryStatus(@GetUser() user: User) {
     if (!user.company_id) {
-      throw new Error('Usuario sin compañía asignada');
+      throw new BadRequestException('Usuario sin compañía asignada');
     }
     return this.inventarioService.getInventoryStatus(user.company_id);
   }
@@ -54,7 +61,7 @@ export class InventarioController {
   @Auth()
   getProductKardex(@GetUser() user: User, @Query('sku') sku: string) {
     if (!user.company_id) {
-      throw new Error('Usuario sin compañía asignada');
+      throw new BadRequestException('Usuario sin compañía asignada');
     }
     return this.inventarioService.getProductKardex(sku, user.company_id);
   }

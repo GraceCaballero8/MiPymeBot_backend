@@ -13,8 +13,11 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       exceptionFactory: (errors) => {
-        console.log('❌ Validación:', errors);
-        return new BadRequestException(errors);
+        // Extraer solo los mensajes de error de forma simple
+        const messages = errors.flatMap((error) =>
+          error.constraints ? Object.values(error.constraints) : [],
+        );
+        return new BadRequestException(messages);
       },
     }),
   );

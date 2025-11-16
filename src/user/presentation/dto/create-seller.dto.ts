@@ -9,33 +9,39 @@ import {
 } from 'class-validator';
 
 export class CreateSellerDto {
-  @IsString()
-  @MinLength(2)
+  @IsString({ message: 'El nombre es requerido' })
+  @MinLength(2, { message: 'El nombre debe tener al menos 2 caracteres' })
   first_name: string;
 
-  @IsString()
-  @MinLength(2)
+  @IsString({ message: 'El apellido paterno es requerido' })
+  @MinLength(2, {
+    message: 'El apellido paterno debe tener al menos 2 caracteres',
+  })
   last_name_paternal: string;
 
-  @IsString()
-  @MinLength(2)
+  @IsString({ message: 'El apellido materno es requerido' })
+  @MinLength(2, {
+    message: 'El apellido materno debe tener al menos 2 caracteres',
+  })
   last_name_maternal: string;
 
-  @IsEmail()
+  @IsEmail({}, { message: 'El email debe ser válido' })
   email: string;
 
-  @IsString()
-  @MinLength(8)
+  @IsString({ message: 'La contraseña es requerida' })
+  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
   password: string;
 
-  @IsString()
-  @Matches(/^\d{8}$/, { message: 'DNI must be 8 digits' })
+  @IsString({ message: 'El DNI es requerido' })
+  @Matches(/^\d{8}$/, { message: 'El DNI debe tener 8 dígitos' })
   dni: string;
 
-  @IsDateString()
+  @IsDateString({}, { message: 'La fecha de nacimiento debe ser válida' })
   birth_date: string;
 
-  @IsEnum(['MASCULINO', 'FEMENINO'])
+  @IsEnum(['MASCULINO', 'FEMENINO'], {
+    message: 'El género debe ser MASCULINO o FEMENINO',
+  })
   gender: 'MASCULINO' | 'FEMENINO';
 
   @IsOptional()

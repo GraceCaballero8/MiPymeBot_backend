@@ -6,6 +6,7 @@ import {
   Body,
   Query,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { CatalogoService } from './catalogo.service';
@@ -46,7 +47,7 @@ export class CatalogoController {
   @Auth()
   searchProducts(@GetUser() user: User, @Query('term') term: string) {
     if (!user.company_id) {
-      throw new Error('Usuario sin compañía asignada');
+      throw new BadRequestException('Usuario sin compañía asignada');
     }
     return this.catalogoService.searchByTerm(term, user.company_id);
   }
@@ -58,7 +59,7 @@ export class CatalogoController {
   @Auth()
   getAllProducts(@GetUser() user: User) {
     if (!user.company_id) {
-      throw new Error('Usuario sin compañía asignada');
+      throw new BadRequestException('Usuario sin compañía asignada');
     }
     return this.catalogoService.findAll(user.company_id);
   }

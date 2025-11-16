@@ -2,11 +2,9 @@ import {
   IsString,
   IsEmail,
   MinLength,
-  MaxLength,
   IsOptional,
   IsEnum,
   IsDateString,
-  Matches,
   IsNumber,
 } from 'class-validator';
 
@@ -16,32 +14,30 @@ export enum GenderEnum {
 }
 
 export class CreateUserDto {
-  @IsEmail()
+  @IsEmail({}, { message: 'El email debe ser válido' })
   email: string;
 
-  @IsString()
-  @MinLength(6)
-  @MaxLength(100)
-  @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/)
+  @IsString({ message: 'La contraseña debe ser un texto' })
+  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
   password: string;
 
-  @IsString()
+  @IsString({ message: 'El nombre es requerido' })
   first_name: string;
 
-  @IsString()
+  @IsString({ message: 'El apellido paterno es requerido' })
   last_name_paternal: string;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El apellido materno debe ser un texto' })
   last_name_maternal?: string;
 
-  @IsString()
+  @IsString({ message: 'El DNI es requerido' })
   dni: string;
 
-  @IsDateString()
+  @IsDateString({}, { message: 'La fecha de nacimiento debe ser válida' })
   birth_date: string;
 
-  @IsEnum(GenderEnum)
+  @IsEnum(GenderEnum, { message: 'El género debe ser MASCULINO o FEMENINO' })
   gender: GenderEnum;
 
   @IsOptional()
