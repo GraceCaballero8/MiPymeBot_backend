@@ -40,11 +40,7 @@ model Company {
   sellers  User[]    @relation("CompanySellers")
   products Product[]
 
-  // --- AÑADE ESTAS LÍNEAS ---
-  product_groups    ProductGroup[]
-  units_of_measure  UnitOfMeasure[]
   inventory_movements InventoryMovement[]
-  // --- FIN DE LÍNEAS NUEVAS ---
 }
 
 model User {
@@ -99,28 +95,22 @@ enum MovementType {
   EGRESO  // Salida de stock (ej. Venta)
 }
 
-// Modelo para "Grupos" (Ej: Producto Terminado, Materia Prima)
+// Modelo para "Grupos" (Ej: Producto Terminado, Materia Prima) - GLOBAL
 model ProductGroup {
   id         Int       @id @default(autoincrement())
-  name       String
-  company_id Int
-  company    Company   @relation(fields: [company_id], references: [id])
+  name       String    @unique // Ahora es único globalmente
   products   Product[]
 
-  @@unique([name, company_id]) // Un grupo no se puede llamar igual en la misma compañía
   @@map("product_groups")
 }
 
-// Modelo para "Unidad de Medida" (Ej: Unidades, Kilos, Litros)
+// Modelo para "Unidad de Medida" (Ej: Unidades, Kilos, Litros) - GLOBAL
 model UnitOfMeasure {
   id           Int       @id @default(autoincrement())
-  name         String // Ej: "Unidades"
-  abbreviation String // Ej: "UND"
-  company_id   Int
-  company      Company   @relation(fields: [company_id], references: [id])
+  name         String    @unique // Ahora es único globalmente
+  abbreviation String
   products     Product[]
 
-  @@unique([name, company_id])
   @@map("units_of_measure")
 }
 
@@ -129,7 +119,7 @@ model Product {
   id          Int     @id @default(autoincrement())
   sku         String // El "Código" en tu UI, ej: "PT0002"
   name        String // Ej: "POLO BASICO TALLA M"
-  slug        String  @unique // Para URLs amigables
+  slug        String? @unique // Para URLs amigables (nullable, se genera después con id)
   price       Decimal? // Precio de venta (opcional, pero recomendado)
   min_stock   Int     @default(0) // Stock Mínimo
   

@@ -37,12 +37,9 @@ export class CatalogoService {
       throw new BadRequestException(`El SKU "${sku}" ya existe en tu catálogo`);
     }
 
-    // Validar que la unidad de medida exista y pertenezca a la compañía
-    const unit = await this.prisma.unitOfMeasure.findFirst({
-      where: {
-        id: unit_id,
-        company_id: user.company_id,
-      },
+    // Validar que la unidad de medida exista (catálogo global)
+    const unit = await this.prisma.unitOfMeasure.findUnique({
+      where: { id: unit_id },
     });
 
     if (!unit) {
@@ -51,27 +48,21 @@ export class CatalogoService {
       );
     }
 
-    // Validar que el grupo exista y pertenezca a la compañía
-    const group = await this.prisma.productGroup.findFirst({
-      where: {
-        id: group_id,
-        company_id: user.company_id,
-      },
+    // Validar que el grupo exista (catálogo global)
+    const group = await this.prisma.productGroup.findUnique({
+      where: { id: group_id },
     });
 
     if (!group) {
       throw new NotFoundException(`El grupo con ID ${group_id} no existe`);
     }
 
-    // Generar slug a partir del nombre
-    const slug = this.generateSlug(name, sku);
-
-    // Crear el producto
-    return this.prisma.product.create({
+    // 1. Crear el producto SIN slug (o con slug temporal null)
+    const createdProduct = await this.prisma.product.create({
       data: {
         sku,
         name,
-        slug,
+        slug: null, // Se actualizará después con el id
         min_stock,
         price,
         unit_id,
@@ -79,6 +70,15 @@ export class CatalogoService {
         user_id: user.id,
         company_id: user.company_id,
       },
+    });
+
+    // 2. Generar slug único usando el id del producto recién creado
+    const slug = this.generateSlug(name, createdProduct.id);
+
+    // 3. Actualizar el producto con el slug definitivo
+    return this.prisma.product.update({
+      where: { id: createdProduct.id },
+      data: { slug },
       include: {
         unit: true,
         group: true,
@@ -101,21 +101,19 @@ export class CatalogoService {
   }
 
   /**
-   * Obtiene todos los grupos de productos de una compañía.
+   * Obtiene todos los grupos de productos (catálogo global).
    */
-  async getGroups(company_id: number) {
+  async getGroups() {
     return this.prisma.productGroup.findMany({
-      where: { company_id },
       orderBy: { name: 'asc' },
     });
   }
 
   /**
-   * Obtiene todas las unidades de medida de una compañía.
+   * Obtiene todas las unidades de medida (catálogo global).
    */
-  async getUnits(company_id: number) {
+  async getUnits() {
     return this.prisma.unitOfMeasure.findMany({
-      where: { company_id },
       orderBy: { name: 'asc' },
     });
   }
@@ -179,13 +177,10 @@ export class CatalogoService {
 
     const { unit_id, group_id, name, ...rest } = updateProductDto;
 
-    // Si se actualiza la unidad, validar que exista
+    // Si se actualiza la unidad, validar que exista (catálogo global)
     if (unit_id) {
-      const unit = await this.prisma.unitOfMeasure.findFirst({
-        where: {
-          id: unit_id,
-          company_id: user.company_id,
-        },
+      const unit = await this.prisma.unitOfMeasure.findUnique({
+        where: { id: unit_id },
       });
 
       if (!unit) {
@@ -195,13 +190,10 @@ export class CatalogoService {
       }
     }
 
-    // Si se actualiza el grupo, validar que exista
+    // Si se actualiza el grupo, validar que exista (catálogo global)
     if (group_id) {
-      const group = await this.prisma.productGroup.findFirst({
-        where: {
-          id: group_id,
-          company_id: user.company_id,
-        },
+      const group = await this.prisma.productGroup.findUnique({
+        where: { id: group_id },
       });
 
       if (!group) {
@@ -209,11 +201,11 @@ export class CatalogoService {
       }
     }
 
-    // Si se actualiza el nombre, regenerar el slug
+    // Si se actualiza el nombre, regenerar el slug con el id del producto
     const updateData: any = { ...rest, unit_id, group_id };
     if (name) {
       updateData.name = name;
-      updateData.slug = this.generateSlug(name, product.sku);
+      updateData.slug = this.generateSlug(name, product.id);
     }
 
     // Actualizar el producto
@@ -228,9 +220,10 @@ export class CatalogoService {
   }
 
   /**
-   * Genera un slug único a partir del nombre y SKU del producto.
+   * Genera un slug único a partir del nombre y el ID del producto.
+   * El ID garantiza unicidad global del slug.
    */
-  private generateSlug(name: string, sku: string): string {
+  private generateSlug(name: string, productId: number): string {
     const nameSlug = name
       .toLowerCase()
       .normalize('NFD')
@@ -238,6 +231,6 @@ export class CatalogoService {
       .replace(/[^a-z0-9]+/g, '-') // Reemplazar caracteres especiales con guiones
       .replace(/^-+|-+$/g, ''); // Eliminar guiones al inicio/fin
 
-    return `${nameSlug}-${sku.toLowerCase()}`;
+    return `${nameSlug}-${productId}`;
   }
 }

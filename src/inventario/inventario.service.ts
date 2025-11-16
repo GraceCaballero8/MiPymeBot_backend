@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MovementType, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovementDto } from './dto/create-movement.dto';
@@ -33,6 +37,38 @@ export class InventarioService {
       throw new NotFoundException(
         `El producto con código "${product_code}" no existe en tu catálogo`,
       );
+    }
+
+    // Si es EGRESO, validar que haya stock suficiente
+    if (type === MovementType.EGRESO) {
+      // Calcular el stock actual del producto
+      const movements = await this.prisma.inventoryMovement.findMany({
+        where: {
+          product_id: product.id,
+          company_id: user.company_id,
+        },
+        select: {
+          quantity: true,
+          type: true,
+        },
+      });
+
+      const totalIngresos = movements
+        .filter((m) => m.type === MovementType.INGRESO)
+        .reduce((sum, m) => sum + m.quantity, 0);
+
+      const totalEgresos = movements
+        .filter((m) => m.type === MovementType.EGRESO)
+        .reduce((sum, m) => sum + m.quantity, 0);
+
+      const stockActual = totalIngresos - totalEgresos;
+
+      // Validar que no se exceda el stock disponible
+      if (quantity > stockActual) {
+        throw new BadRequestException(
+          `No hay stock suficiente. Stock actual: ${stockActual}, cantidad solicitada: ${quantity}`,
+        );
+      }
     }
 
     // Crear el movimiento en el Kardex

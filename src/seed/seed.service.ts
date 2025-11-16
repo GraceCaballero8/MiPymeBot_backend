@@ -127,32 +127,28 @@ export class SeedService {
   }
 
   /**
-   * Crea grupos de productos y unidades de medida para cada compañía.
+   * Crea grupos de productos y unidades de medida (catálogos globales).
    */
   private async createProductGroupsAndUnits() {
-    const companies = await this.prisma.company.findMany();
+    // Crear grupos de productos desde seedData (una sola vez, globales)
+    const groupsData = seedData.productGroups.map((group) => ({
+      name: group.name,
+    }));
 
-    for (const company of companies) {
-      // Crear grupos de productos desde seedData
-      const groupsData = seedData.productGroups.map((group) => ({
-        name: group.name,
-        company_id: company.id,
-      }));
+    await this.prisma.productGroup.createMany({
+      data: groupsData,
+      skipDuplicates: true, // Evitar duplicados si ya existen
+    });
 
-      await this.prisma.productGroup.createMany({
-        data: groupsData,
-      });
+    // Crear unidades de medida desde seedData (una sola vez, globales)
+    const unitsData = seedData.unitsOfMeasure.map((unit) => ({
+      name: unit.name,
+      abbreviation: unit.abbreviation,
+    }));
 
-      // Crear unidades de medida desde seedData
-      const unitsData = seedData.unitsOfMeasure.map((unit) => ({
-        name: unit.name,
-        abbreviation: unit.abbreviation,
-        company_id: company.id,
-      }));
-
-      await this.prisma.unitOfMeasure.createMany({
-        data: unitsData,
-      });
-    }
+    await this.prisma.unitOfMeasure.createMany({
+      data: unitsData,
+      skipDuplicates: true, // Evitar duplicados si ya existen
+    });
   }
 }

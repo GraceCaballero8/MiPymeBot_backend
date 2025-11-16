@@ -19,29 +19,23 @@ export class CatalogoController {
   constructor(private readonly catalogoService: CatalogoService) {}
 
   /**
-   * GET /products/groups - Listar grupos de productos
+   * GET /products/groups - Listar grupos de productos (catálogo global)
    * IMPORTANTE: Esta ruta DEBE estar ANTES de GET /products/:id
    */
   @Get('groups')
   @Auth()
-  getGroups(@GetUser() user: User) {
-    if (!user.company_id) {
-      throw new Error('Usuario sin compañía asignada');
-    }
-    return this.catalogoService.getGroups(user.company_id);
+  getGroups() {
+    return this.catalogoService.getGroups();
   }
 
   /**
-   * GET /products/units - Listar unidades de medida
+   * GET /products/units - Listar unidades de medida (catálogo global)
    * IMPORTANTE: Esta ruta DEBE estar ANTES de GET /products/:id
    */
   @Get('units')
   @Auth()
-  getUnits(@GetUser() user: User) {
-    if (!user.company_id) {
-      throw new Error('Usuario sin compañía asignada');
-    }
-    return this.catalogoService.getUnits(user.company_id);
+  getUnits() {
+    return this.catalogoService.getUnits();
   }
 
   /**

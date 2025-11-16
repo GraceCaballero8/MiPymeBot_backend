@@ -8,7 +8,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from '@prisma/client';
 
 @Controller('profile')
-@Auth(ValidRoles.ADMIN)
+@Auth() // Permitir a cualquier usuario autenticado (admin y vendedor)
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 

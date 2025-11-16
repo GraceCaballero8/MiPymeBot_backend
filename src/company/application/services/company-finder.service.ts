@@ -35,4 +35,20 @@ export class CompanyFinderService {
       },
     });
   }
+
+  async findById(companyId: number) {
+    return this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: {
+        admin: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name_paternal: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
 }
