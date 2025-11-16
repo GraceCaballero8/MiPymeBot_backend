@@ -88,4 +88,13 @@ export class CatalogoController {
   ) {
     return this.catalogoService.update(+id, updateProductDto, user);
   }
+
+  /**
+   * PATCH /products/:id/toggle-active - Toggle active/inactive para producto
+   */
+  @Patch(':id/toggle-active')
+  @Auth()
+  toggleProductActive(@Param('id') id: string, @GetUser() user: User) {
+    return this.catalogoService.toggleActive(+id, user);
+  }
 }

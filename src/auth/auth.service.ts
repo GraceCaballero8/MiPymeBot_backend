@@ -157,7 +157,6 @@ export class AuthService {
       last_name_paternal: user.last_name_paternal,
       last_name_maternal: user.last_name_maternal,
       role: user.role?.name,
-      status: user.status,
       created_at: user.created_at,
       updated_at: user.updated_at,
     };

@@ -30,9 +30,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) throw new UnauthorizedException('Token not valid');
 
-    // En el esquema Prisma el campo de estado se llama `status`
-    if (user.status === 'INACTIVE')
-      throw new UnauthorizedException('User inactive');
+    // Verificar que el usuario esté activo
+    if (!user.is_active) throw new UnauthorizedException('User inactive');
 
     return user;
   }

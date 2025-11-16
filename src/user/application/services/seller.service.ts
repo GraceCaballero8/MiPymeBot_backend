@@ -65,7 +65,6 @@ export class SellerService {
         profile_image: createSellerDto.profile_image,
         role_id: 2, // Rol de vendedor (hardcoded)
         company_id: admin.company_id,
-        status: 'ACTIVE',
       },
       include: {
         role: true,
@@ -75,6 +74,44 @@ export class SellerService {
 
     // Devolver el vendedor sin la contraseña
     const { password, ...sellerWithoutPassword } = seller;
+
+    return sellerWithoutPassword;
+  }
+
+  async toggleActive(sellerId: number, adminId: number) {
+    // Verificar que el admin existe y tiene una empresa
+    const admin = await this.prisma.user.findUnique({
+      where: { id: adminId },
+    });
+
+    if (!admin || !admin.company_id) {
+      throw new NotFoundException('Admin or company not found');
+    }
+
+    // Verificar que el vendedor existe y pertenece a la empresa del admin
+    const seller = await this.prisma.user.findFirst({
+      where: {
+        id: sellerId,
+        company_id: admin.company_id,
+        role_id: 2, // Solo vendedores
+      },
+    });
+
+    if (!seller) {
+      throw new NotFoundException('Seller not found or not in your company');
+    }
+
+    // Cambiar el estado de is_active
+    const updatedSeller = await this.prisma.user.update({
+      where: { id: sellerId },
+      data: { is_active: !seller.is_active },
+      include: {
+        role: true,
+        company: true,
+      },
+    });
+
+    const { password, ...sellerWithoutPassword } = updatedSeller;
 
     return sellerWithoutPassword;
   }

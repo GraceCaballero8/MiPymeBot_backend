@@ -67,6 +67,15 @@ export class UserController {
     return await this.sellerService.createSeller(user.id, createSellerDto);
   }
 
+  // Toggle active/inactive para vendedor
+  @Patch('sellers/:id/toggle-active')
+  async toggleSellerActive(
+    @Param('id') sellerId: string,
+    @GetUser() user: User,
+  ) {
+    return await this.sellerService.toggleActive(+sellerId, user.id);
+  }
+
   @Patch(':id')
   async updateUser(
     @Param('id') userId: number,

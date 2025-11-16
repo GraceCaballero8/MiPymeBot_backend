@@ -44,7 +44,6 @@ export class SeedService {
               birth_date: user.birth_date,
               role_id: user.role_id,
               gender: user.gender,
-              status: user.status || 'ACTIVE',
             },
           });
 
@@ -93,7 +92,6 @@ export class SeedService {
             birth_date: user.birth_date,
             role_id: user.role_id,
             gender: user.gender,
-            status: user.status || 'ACTIVE',
             company_id: adminInfo.companyId, // Asociar a la compañía del admin
           },
         });

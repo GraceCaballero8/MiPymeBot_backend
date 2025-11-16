@@ -10,7 +10,6 @@ interface SeedUsuario {
   birth_date: Date;
   role_id: number;
   gender: 'MASCULINO' | 'FEMENINO';
-  status?: 'ACTIVE' | 'INACTIVE';
   company_index?: number; // Índice del admin al que pertenece (solo para vendedores)
 }
 
@@ -66,7 +65,6 @@ export const seedData: SeedData = {
       birth_date: new Date('1990-01-01'),
       role_id: 1, // ADMIN - se creará compañía automáticamente
       gender: 'MASCULINO',
-      status: 'ACTIVE',
     },
     // Vendedor del primer admin (company_index: 0)
     {
@@ -79,7 +77,6 @@ export const seedData: SeedData = {
       birth_date: new Date('1995-03-20'),
       role_id: 2, // VENDEDOR
       gender: 'MASCULINO',
-      status: 'ACTIVE',
       company_index: 0, // Pertenece a la compañía del primer admin
     },
     // Puedes agregar más admins y vendedores

@@ -121,6 +121,7 @@ export class CatalogoService {
   /**
    * Busca productos por SKU o nombre dentro de la compañía del usuario.
    * Usado para el autocompletado en "Registro de Movimientos".
+   * Solo devuelve productos activos.
    */
   async searchByTerm(term: string, company_id: number) {
     if (!term || term.trim().length === 0) {
@@ -130,6 +131,7 @@ export class CatalogoService {
     const products = await this.prisma.product.findMany({
       where: {
         company_id,
+        is_active: true, // Solo productos activos
         OR: [
           { sku: { contains: term, mode: 'insensitive' } },
           { name: { contains: term, mode: 'insensitive' } },
@@ -212,6 +214,37 @@ export class CatalogoService {
     return this.prisma.product.update({
       where: { id: productId },
       data: updateData,
+      include: {
+        unit: true,
+        group: true,
+      },
+    });
+  }
+
+  /**
+   * Toggle active/inactive para productos.
+   */
+  async toggleActive(productId: number, user: User) {
+    if (!user.company_id) {
+      throw new BadRequestException('Usuario sin compañía asignada');
+    }
+
+    // Verificar que el producto existe y pertenece a la compañía
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id: productId,
+        company_id: user.company_id,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado');
+    }
+
+    // Cambiar el estado de is_active
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: { is_active: !product.is_active },
       include: {
         unit: true,
         group: true,

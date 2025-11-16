@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -30,6 +26,7 @@ model Company {
   phone       String?
   address     String?
   logo_url    String?
+  image_url   String?
   description String?
 
   // Timestamps
@@ -54,7 +51,7 @@ model User {
   dni                String     @unique
   birth_date         DateTime
   gender             Gender
-  status             UserStatus @default(ACTIVE)
+  is_active          Boolean    @default(true)
   phone              String?
   address            String?
   profile_image      String?
@@ -79,11 +76,6 @@ model User {
 enum Gender {
   MASCULINO
   FEMENINO
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
 }
 
 // --- INICIO: MODULO DE INVENTARIO ---
@@ -121,6 +113,7 @@ model Product {
   slug        String? @unique // Para URLs amigables (nullable, se genera después con id)
   price       Decimal? // Precio de venta (opcional, pero recomendado)
   min_stock   Int     @default(0) // Stock Mínimo
+  is_active   Boolean @default(true) // Producto activo/inactivo
   
   // Relaciones de Catálogo
   unit_id     Int
