@@ -98,9 +98,7 @@ export class CatalogoService {
       },
       orderBy: { created_at: 'desc' },
     });
-  }
-
-  /**
+  } /**
    * Obtiene todos los grupos de productos (catálogo global).
    */
   async getGroups() {

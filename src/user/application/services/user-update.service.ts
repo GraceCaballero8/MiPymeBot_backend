@@ -21,8 +21,6 @@ export class UserUpdateService {
   async validateRole(userId: number) {
     const user = await this.userFinderService.findById(userId);
 
-    console.log(user);
-
     if (!user) {
       throw new UnauthorizedException('Unauthorized');
     }
