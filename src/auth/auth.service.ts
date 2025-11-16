@@ -144,7 +144,7 @@ export class AuthService {
 
       return {
         user: this.buildUserResponse(created),
-        accessToken: token,
+        token: token,
       };
     } catch (error: any) {
       if (error instanceof HttpException) throw error;
